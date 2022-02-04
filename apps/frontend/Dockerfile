@@ -10,5 +10,5 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY app.py .
-EXPOSE 5001
-ENTRYPOINT ["flask", "run", "-p", "5001", "-h", "0.0.0.0"]
+EXPOSE 5000
+ENTRYPOINT ["flask", "run", "-p", "5000", "-h", "0.0.0.0"]
