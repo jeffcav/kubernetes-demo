@@ -10,4 +10,7 @@ def get_data():
     
     current_time = requests.get("http://" + time_server).text
 
-    return "CURRENT TIME: " + current_time
+    html = "<html><body style=\"background-color:powderblue;\"><h1>Current time: {}</h1></body></html>\n".format(current_time)
+
+
+    return html
