@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: time-backend-service
+spec:
+  selector:
+    app-type: backend
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
