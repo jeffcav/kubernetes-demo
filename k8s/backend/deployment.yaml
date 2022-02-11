@@ -16,7 +16,6 @@ spec:
         ports:
         - containerPort: 5000
 
-  # Defining a replicaset
   replicas: 3
   selector:
     matchLabels:
