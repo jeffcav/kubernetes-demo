@@ -12,11 +12,12 @@ spec:
     spec:
       containers:
       - name: backend-implementation
-        image: jrac/time-backend:v1
+        
+        ## Updating image version
+        image: jrac/time-backend:v2
         ports:
         - containerPort: 5000
 
-  # Defining a replicaset
   replicas: 3
   selector:
     matchLabels:
