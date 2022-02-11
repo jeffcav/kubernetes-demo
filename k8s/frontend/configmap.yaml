@@ -1,0 +1,6 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: frontend-configmap 
+data:
+  time_server: time-backend-service:5000
