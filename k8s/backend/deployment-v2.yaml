@@ -13,7 +13,7 @@ spec:
       containers:
       - name: backend-implementation
         
-        ## Updating image version
+        ## Updated image version
         image: jrac/time-backend:v2
         ports:
         - containerPort: 5000
