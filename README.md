@@ -6,46 +6,58 @@ Download vagrant and virtualbox: https://www.vagrantup.com/downloads
 
 8GB of RAM and a processor with 4+ cores is recommended.
 
-## 2. Provision a Kubernetes cluster
+## 2. Provision a full-fledged Kubernetes cluster in your machine
 
-Go to the `cluster/` directory and run `vagrant up`.
+We will use Vagrant to provision VMs that form a Kubernetes cluster, as illustrated below:
 
-Vagrant will provision 2 VMs on your machine: `k8s-control-plane` and `k8s-node-1`, and they form a kubernetes cluster.
+![kubernetes cluster](figs/k8s-cluster.png)
 
-After their creation, to turn on and off the VMs run `vagrant up` and `vagrant halt` respectively.
+Go to the `cluster/` directory, and:
 
-To run commands inside the VMs, run `vagrant ssh k8s-control-plane` or `vagrant ssh k8s-node-1`.
+1. Run `vagrant up` to create VMs
+2. Run `vagrant halt` or `vagrant up` to turn off and on VMs after creation
+3. Run `vagrant ssh VM-NAME` to run commands inside of a VM
 
-These VMs will be later used to provision 2 services inside the kubernetes cluster.
-
-## 3. Containerize our services
+## 3. Build applications containers
 
 This demo contains one application composed of 2 services:
 
-- Time backend: a time server which returns the current time.
-- Time frontend: a web page which exhibits current time fetched from the backend.
+- **Time backend:** a time server which returns the current time.
+- **Time frontend:** a web page which exhibits current time fetched from the backend.
 
 Next sections will guide you through the build and execution of both containerized services.
 
 ## 3.1. Build docker images
 
-To build docker images for both services:
+To build the backend docker image, run:
 
-- Enter the `src/python/backend` directory and run `docker build -t backend:v1 .`
-- Enter the `src/python/frontend` directory and run `docker build -t frontend:v1 .`
+```bash
+cd src/python/backend
+docker build -t jrac/time-backend:v1 .
+cd -
+```
 
-Push your images to a container registry like Dockerhub.
-In this demo we push them to `jrac/time-backend:v1` and `jrac/time-frontend:v1` respectively.
+To build the frontend docker image, run:
+
+```bash
+cd src/python/frontend
+docker build -t jrac/time-frontend:v1 .
+cd -
+```
 
 ## 3.2. Run docker images
 
 To start the **backend**, run:
 
-`docker run -d --rm --name backend -p 5001:5000 jrac/time-backend:v1`
+```bash
+docker run -d --rm --name backend -p 5001:5000 jrac/time-backend:v1
+```
 
 To start the **frontend**, run:
 
-`docker run -d --rm --name frontend --env TIME_SERVER=172.17.0.2:5000 -p 5000:5000 jrac/time-frontend:v1`
+```bash
+docker run -d --rm --name frontend --env TIME_SERVER=172.17.0.2:5000 -p 5000:5000 jrac/time-frontend:v1
+```
 
 Note that the frontend can be accessed via port 5000 of your host.
 Type `http://localhost:5000` in your browser and you'll see the web page.
