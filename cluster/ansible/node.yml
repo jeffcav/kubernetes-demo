@@ -45,7 +45,7 @@
 
   - name: Configure docker
     copy:
-      src: /home/vagrant/ansible/files/daemon.json
+      src: /home/vagrant/ansible/docker/daemon.json
       dest: /etc/docker/daemon.json
 
   - name: Restart docker
@@ -71,7 +71,6 @@
     apt_key:
       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
       state: present
-
 
   - name: Adding apt repository for Kubernetes
     apt_repository:
@@ -102,62 +101,11 @@
       daemon_reload: yes
       state: restarted
 
-  - name: detect docker's cgroup-driver
-    shell: docker info 2>/dev/null |grep -i cgroup | cut -d":" -f2 | tr -d " "
-    register: docker_cgroup_driver
+  - name: Copy the join command to server location
+    copy: src=/vagrant/join-command dest=/tmp/join-command.sh mode=0777
 
-  - name: Replace docker cdriver
-    replace:
-      dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-      regexp: '--cgroup-driver=(systemd|cgroupfs)'
-      replace: '--cgroup-driver={{docker_cgroup_driver.stdout}}'
-      backup: no
-
-  - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address="192.168.60.10" --apiserver-cert-extra-sans="192.168.60.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
-
-
-  - name: Setup kubeconfig for vagrant user
-    command: "{{ item }}"
-    with_items:
-     - mkdir -p /home/vagrant/.kube
-     - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-     - chown vagrant:vagrant /home/vagrant/.kube/config
-
-
-  - name: Install calico pod network
-    become: false
-    command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
-
-
-  - name: Generate join command
-    command: kubeadm token create --print-join-command
-    register: join_command
-
-  - name: Copy join command to local file
-    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
-    become: false
-
-  - name: Copy join command file to vagrant host
-    copy:
-      src: ./join-command
-      dest: /vagrant/join-command
-
-  - name: Add an apt signing key for Helm
-    apt_key:
-      url: https://baltocdn.com/helm/signing.asc
-      state: present
-
-  - name: Adding apt repository for Helm
-    apt_repository:
-      repo: deb https://baltocdn.com/helm/stable/debian/ all main
-      state: present
-
-  - name: Install Helm
-    apt:
-      name: helm
-      state: present
-      update_cache: yes
+  - name: Join the node to cluster
+    command: sh /tmp/join-command.sh
 
   handlers:
     - name: docker status

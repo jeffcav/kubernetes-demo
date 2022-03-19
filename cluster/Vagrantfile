@@ -1,9 +1,8 @@
-IMAGE_NAME = "bento/ubuntu-16.04"
 NUM_WORKERS = 1
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
-    config.vm.box = IMAGE_NAME
+    config.vm.box = "ubuntu/focal64"
 
     config.vm.provider "virtualbox" do |v|
         v.memory = 2048
@@ -14,16 +13,15 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--usbehci", "off"]
     end
 
-    config.vm.define "k8s-master" do |master|
-        master.vm.box = IMAGE_NAME
+    config.vm.define "k8s-control-plane" do |master|
         master.vm.network "private_network", ip: "192.168.60.10"
         master.vm.hostname = "k8s-master"
 
-        master.vm.provision "file", source: "ansible/master-playbook.yml", destination: "/home/vagrant/master-playbook.yml"
-        master.vm.provision "file", source: "ansible/files/daemon.json", destination: "/home/vagrant/ansible/files/daemon.json"
+        master.vm.provision "file", source: "ansible/cplane.yml", destination: "/home/vagrant/cplane.yml"
+        master.vm.provision "file", source: "ansible/docker/daemon.json", destination: "/home/vagrant/ansible/docker/daemon.json"
 
         master.vm.provision "ansible_local" do |ansible|
-            ansible.playbook = "/home/vagrant/master-playbook.yml"
+            ansible.playbook = "/home/vagrant/cplane.yml"
             ansible.extra_vars = {
                 node_ip: "192.168.60.10",
             }
@@ -31,16 +29,15 @@ Vagrant.configure("2") do |config|
     end
 
     (1..NUM_WORKERS).each do |i|
-        config.vm.define "node-#{i}" do |node|
-            node.vm.box = IMAGE_NAME
+        config.vm.define "k8s-node-#{i}" do |node|
             node.vm.network "private_network", ip: "192.168.60.#{i + 10}"
             node.vm.hostname = "k8s-node-#{i}"
 
-            node.vm.provision "file", source: "ansible/node-playbook.yml", destination: "/home/vagrant/node-playbook.yml"
-            node.vm.provision "file", source: "ansible/files/daemon.json", destination: "/home/vagrant/ansible/files/daemon.json"
+            node.vm.provision "file", source: "ansible/node.yml", destination: "/home/vagrant/node.yml"
+            node.vm.provision "file", source: "ansible/docker/daemon.json", destination: "/home/vagrant/ansible/docker/daemon.json"
 
             node.vm.provision "ansible_local" do |ansible|
-                ansible.playbook = "/home/vagrant/node-playbook.yml"
+                ansible.playbook = "/home/vagrant/node.yml"
                 ansible.extra_vars = {
                     node_ip: "192.168.60.#{i + 10}",
                 }
