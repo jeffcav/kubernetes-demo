@@ -93,6 +93,6 @@ Here we expose port 30008 as port 5050 of our host:
 
 From the cluster/ directory of this repository, run:
 
-`vagrant ssh node-1 -- -L 5050:localhost:30008`
+`vagrant ssh k8s-node-1 -- -L 5050:localhost:30008`
 
 Now, from a web browser in your host access: `localhost:5050` and Voilà.
