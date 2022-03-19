@@ -10,11 +10,11 @@ Download vagrant and virtualbox: https://www.vagrantup.com/downloads
 
 Go to the `cluster/` directory and run `vagrant up`.
 
-Vagrant will provision 2 VMs on your machine: `k8s-master` and `node-1`, and they form a kubernetes cluster.
+Vagrant will provision 2 VMs on your machine: `k8s-control-plane` and `k8s-node-1`, and they form a kubernetes cluster.
 
-After their creation, to turn on and off the VMs run `vagrant up` and `vagrant off` respectively.
+After their creation, to turn on and off the VMs run `vagrant up` and `vagrant halt` respectively.
 
-To run commands inside the VMs, run `vagrant ssh k8s-master` or `vagrant ssh node-1`.
+To run commands inside the VMs, run `vagrant ssh k8s-control-plane` or `vagrant ssh k8s-node-1`.
 
 These VMs will be later used to provision 2 services inside the kubernetes cluster.
 
@@ -31,8 +31,8 @@ Next sections will guide you through the build and execution of both containeriz
 
 To build docker images for both services:
 
-- Enter the `apps/backend` directory and run `docker build -t backend:v1 .`
-- Enter the `apps/frontend` directory and run `docker build -t frontend:v1 .`
+- Enter the `src/python/backend` directory and run `docker build -t backend:v1 .`
+- Enter the `src/python/frontend` directory and run `docker build -t frontend:v1 .`
 
 Push your images to a container registry like Dockerhub.
 In this demo we push them to `jrac/time-backend:v1` and `jrac/time-frontend:v1` respectively.
@@ -42,7 +42,6 @@ In this demo we push them to `jrac/time-backend:v1` and `jrac/time-frontend:v1` 
 To start the **backend**, run:
 
 `docker run -d --rm --name backend -p 5001:5000 jrac/time-backend:v1`
-
 
 To start the **frontend**, run:
 
@@ -61,15 +60,15 @@ Time Frontend was implemented as a Kubernetes Pod that runs a web server, plus a
 
 ### 4.1. Deploy the backend
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/k8s/backend/deployment.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/backend/deployment.yaml>
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/k8s/backend/service.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/backend/service.yaml>
 
 ### 4.2. Deploy the frontend
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/k8s/frontend/pod.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/pod.yaml>
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/k8s/frontend/service.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/service.yaml>
 
 ## 5. Access application from your host
 
