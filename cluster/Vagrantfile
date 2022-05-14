@@ -17,17 +17,18 @@ Vagrant.configure("2") do |config|
         cplane.vm.network "private_network", ip: "192.168.60.10"
         cplane.vm.hostname = "k8s-cplane"
 
-        cplane.vm.provision "file", source: "ansible/cplane.yml", destination: "/home/vagrant/ansible"
+        cplane.vm.provision "file", source: "ansible", destination: "/home/vagrant/ansible"
 
         cplane.vm.provision "ansible_local" do |ansible|
             ansible.playbook = "/home/vagrant/ansible/cplane.yml"
             ansible.extra_vars = {
                 node_ip: "192.168.60.10",
-                cidr: "192.168.60.0/16"
+                cidr: "192.168.0.0/16"
             }
         end
 
         cplane.vm.network "forwarded_port", guest: 443, host: 8080
+        cplane.vm.network "forwarded_port", guest: 6443, host: 8090
     end
 
     (1..NUM_WORKERS).each do |i|

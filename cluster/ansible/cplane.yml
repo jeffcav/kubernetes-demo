@@ -2,6 +2,10 @@
 - hosts: all
   become: true
   tasks:
+  - name: Printing variables
+    debug:
+      msg: "System {{ node_ip }} on cidr {{ cidr }}"
+
   - name: Install packages that allow apt to be used over HTTPS
     apt:
       name: "{{ packages }}"
@@ -114,7 +118,7 @@
       backup: no
 
   - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name k8s-master --pod-network-cidr={{ cidr }}
+    command: kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }} --node-name k8s-cplane --pod-network-cidr={{ cidr }}
 
 
   - name: Setup kubeconfig for vagrant user
