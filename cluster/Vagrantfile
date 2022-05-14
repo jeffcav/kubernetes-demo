@@ -13,19 +13,21 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--usbehci", "off"]
     end
 
-    config.vm.define "k8s-control-plane" do |master|
-        master.vm.network "private_network", ip: "192.168.60.10"
-        master.vm.hostname = "k8s-master"
+    config.vm.define "k8s-cplane" do |cplane|
+        cplane.vm.network "private_network", ip: "192.168.60.10"
+        cplane.vm.hostname = "k8s-cplane"
 
-        master.vm.provision "file", source: "ansible/cplane.yml", destination: "/home/vagrant/cplane.yml"
-        master.vm.provision "file", source: "ansible/docker/daemon.json", destination: "/home/vagrant/ansible/docker/daemon.json"
+        cplane.vm.provision "file", source: "ansible/cplane.yml", destination: "/home/vagrant/ansible"
 
-        master.vm.provision "ansible_local" do |ansible|
-            ansible.playbook = "/home/vagrant/cplane.yml"
+        cplane.vm.provision "ansible_local" do |ansible|
+            ansible.playbook = "/home/vagrant/ansible/cplane.yml"
             ansible.extra_vars = {
                 node_ip: "192.168.60.10",
+                cidr: "192.168.60.0/16"
             }
         end
+
+        cplane.vm.network "forwarded_port", guest: 443, host: 8080
     end
 
     (1..NUM_WORKERS).each do |i|
@@ -33,11 +35,10 @@ Vagrant.configure("2") do |config|
             node.vm.network "private_network", ip: "192.168.60.#{i + 10}"
             node.vm.hostname = "k8s-node-#{i}"
 
-            node.vm.provision "file", source: "ansible/node.yml", destination: "/home/vagrant/node.yml"
-            node.vm.provision "file", source: "ansible/docker/daemon.json", destination: "/home/vagrant/ansible/docker/daemon.json"
-
+            node.vm.provision "file", source: "ansible", destination: "/home/vagrant/ansible"
+            
             node.vm.provision "ansible_local" do |ansible|
-                ansible.playbook = "/home/vagrant/node.yml"
+                ansible.playbook = "/home/vagrant/ansible/node.yml"
                 ansible.extra_vars = {
                     node_ip: "192.168.60.#{i + 10}",
                 }
