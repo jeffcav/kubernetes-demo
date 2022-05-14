@@ -3,128 +3,18 @@
   become: true
   tasks:
   
-  - name: Install packages that allow apt to be used over HTTPS
-    apt:
-      name: "{{ packages }}"
-      state: present
-      update_cache: yes
-    vars:
-      packages:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-      - software-properties-common
+  - name: Install prerequisites
+    import_role:
+      name: common
 
-  - name: Install docker
-      import_role:
-        name: container-runtime
+  - name: Install Docker
+    import_role:
+      name: docker-runtime
 
-  - name: Remove swapfile from /etc/fstab
-    mount:
-      name: "{{ item }}"
-      fstype: swap
-      state: absent
-    with_items:
-      - swap
-      - none
-
-  - name: Disable swap
-    command: swapoff -a
-    when: ansible_swaptotal_mb > 0
-
-  - name: Add an apt signing key for Kubernetes
-    apt_key:
-      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-      state: present
-
-
-  - name: Adding apt repository for Kubernetes
-    apt_repository:
-      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
-      state: present
-      filename: kubernetes.list
-
-  - name: Install Kubernetes binaries
-    apt:
-      name: "{{ packages }}"
-      state: present
-      update_cache: yes
-    vars:
-      packages:
-        - kubelet
-        - kubeadm
-        - kubectl
-
-  - name: Configure node ip
-    lineinfile:
-      path: /etc/default/kubelet
-      line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
-      create: yes
-
-  - name: Restart kubelet
-    service:
-      name: kubelet
-      daemon_reload: yes
-      state: restarted
-
-  - name: detect docker's cgroup-driver
-    shell: docker info 2>/dev/null |grep -i cgroup | cut -d":" -f2 | tr -d " "
-    register: docker_cgroup_driver
-
-  - name: Replace docker cdriver
-    replace:
-      dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-      regexp: '--cgroup-driver=(systemd|cgroupfs)'
-      replace: '--cgroup-driver={{docker_cgroup_driver.stdout}}'
-      backup: no
-
-  - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }} --node-name k8s-cplane --pod-network-cidr={{ cidr }}
-
-
-  - name: Setup kubeconfig for vagrant user
-    command: "{{ item }}"
-    with_items:
-     - mkdir -p /home/vagrant/.kube
-     - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-     - chown vagrant:vagrant /home/vagrant/.kube/config
-
-
-  - name: Install calico pod network
-    become: false
-    command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
-
-
-  - name: Generate join command
-    command: kubeadm token create --print-join-command
-    register: join_command
-
-  - name: Copy join command to local file
-    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
-    become: false
-
-  - name: Copy join command file to vagrant host
-    copy:
-      src: ./join-command
-      dest: /vagrant/join-command
-
-  - name: Add an apt signing key for Helm
-    apt_key:
-      url: https://baltocdn.com/helm/signing.asc
-      state: present
-
-  - name: Adding apt repository for Helm
-    apt_repository:
-      repo: deb https://baltocdn.com/helm/stable/debian/ all main
-      state: present
-
-  - name: Install Helm
-    apt:
-      name: helm
-      state: present
-      update_cache: yes
+  - name: Install Kubernetes
+    import_role:
+      name: k8s-control-plane
 
   handlers:
-    - name: docker status
-      service: name=docker state=started
+  - name: docker status
+    service: name=docker state=started
