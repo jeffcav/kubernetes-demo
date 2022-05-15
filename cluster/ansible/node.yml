@@ -1,19 +1,11 @@
 ---
 - hosts: all
   become: true
-  tasks:
-  - name: Install prerequisites
-    import_role:
-      name: common
-
-  - name: Install Docker
-    import_role:
-      name: docker-runtime
-
-  - name: Install Kubernetes
-    import_role:
-      name: k8s-node
-
+  roles:
+    - common
+    - containerd
+    - kubernetes
+    - kubernetes-node
   handlers:
-    - name: docker status
-      service: name=docker state=started
+  - name: containerd status
+    service: name=containerd state=started

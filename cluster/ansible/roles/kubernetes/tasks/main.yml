@@ -36,7 +36,7 @@
 - name: Configure node ip
   lineinfile:
     path: /etc/default/kubelet
-    line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ ip }}
     create: yes
 
 - name: Restart kubelet
@@ -44,9 +44,3 @@
     name: kubelet
     daemon_reload: yes
     state: restarted
-
-- name: Copy the join command to server location
-  copy: src=/vagrant/join-command dest=/tmp/join-command.sh mode=0777
-
-- name: Join the node to cluster
-  command: sh /tmp/join-command.sh
