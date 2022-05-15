@@ -24,18 +24,20 @@ Run:
 
 ```bash
 # create service account
-vagrant ssh k8s-cplane -- kubectl -n kube-system create serviceaccount kubeconfig-sa
+vagrant ssh control-plane -- kubectl -n kube-system create serviceaccount kubeconfig-sa
 
 # create cluster-role binding
-vagrant ssh k8s-cplane -- kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:kubeconfig-sa
+vagrant ssh control-plane -- kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:kubeconfig-sa
 ```
 
 Get token with:
 
 ```bash
-TOKENNAME=`vagrant ssh k8s-cplane -- kubectl -n kube-system get serviceaccount/kubeconfig-sa -o jsonpath='{.secrets[0].name}'`
+TOKENNAME=`vagrant ssh control-plane -- kubectl -n kube-system get serviceaccount/kubeconfig-sa -o jsonpath='{.secrets[0].name}'`
 
-TOKEN=`vagrant ssh k8s-cplane -- kubectl -n kube-system get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
+TOKEN=`vagrant ssh control-plane -- kubectl -n kube-system get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
+
+CLUSTER_CA=`vagrant ssh control-plane -- kubectl config view --raw -o=go-template='{{range .clusters}}{{if eq .name "kubernetes"}}"{{with index .cluster "certificate-authority-data" }}{{.}}{{end}}"{{ end }}{{ end }}'`
 ```
 
 Create a kubeconfig file:

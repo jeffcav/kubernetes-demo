@@ -1,0 +1,20 @@
+cat << EOF > kommander-cluster-admin-config
+apiVersion: v1
+kind: Config
+current-context: kubernetes-admin@kubernetes
+contexts:
+- name: kubernetes-admin@kubernetes
+  context:
+    cluster: kubernetes
+    user: kommander-cluster-admin
+    namespace: kube-system
+clusters:
+- name: kubernetes-admin@kubernetes
+  cluster:
+    certificate-authority-data: ${CLUSTER_CA}
+    server: https://192.168.60.10:6443
+users:
+- name: kommander-cluster-admin
+  user:
+    token: ${USER_TOKEN_VALUE}
+EOF
