@@ -24,3 +24,8 @@
   copy:
     src: ./join-command
     dest: /vagrant/join-command
+
+- name: Copy kubeconfig to host
+  copy:
+    src: ~/.kube/config
+    dest: /vagrant/config
