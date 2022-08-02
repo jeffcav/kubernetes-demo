@@ -18,6 +18,46 @@ Go to the `cluster/` directory, and:
 2. Run `vagrant halt` or `vagrant up` to turn off and on VMs after creation
 3. Run `vagrant ssh VM-NAME` to run commands inside of a VM
 
+With the cluster running, generate a token for external access.
+
+Run:
+
+```bash
+# create service account
+vagrant ssh control-plane -- kubectl -n kube-system create serviceaccount kubeconfig-sa
+
+# create cluster-role binding
+vagrant ssh control-plane -- kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:kubeconfig-sa
+```
+
+Get token with:
+
+```bash
+TOKENNAME=`vagrant ssh control-plane -- kubectl -n kube-system get serviceaccount/kubeconfig-sa -o jsonpath='{.secrets[0].name}'`
+
+TOKEN=`vagrant ssh control-plane -- kubectl -n kube-system get secret $TOKENNAME -o jsonpath='{.data.token}'| base64 --decode`
+
+CLUSTER_CA=`vagrant ssh control-plane -- kubectl config view --raw -o=go-template='{{range .clusters}}{{if eq .name "kubernetes"}}"{{with index .cluster "certificate-authority-data" }}{{.}}{{end}}"{{ end }}{{ end }}'`
+```
+
+Create a kubeconfig file:
+
+Install kubectl:
+
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+rm ./kubectl
+```
+
+```bash
+kubectl config --kubeconfig=config-demo set-cluster demo --server=https://localhost:8008
+
+kubectl config set-credentials kubeconfig-sa --token=$TOKEN
+
+
+```
+
 ## 3. Build applications containers
 
 This demo contains one application composed of 2 services:
