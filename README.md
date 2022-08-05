@@ -112,27 +112,20 @@ Time Frontend was implemented as a Kubernetes Pod that runs a web server, plus a
 
 ### 4.1. Deploy the backend
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/backend/deployment.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/backend/pod.yaml>
 
 kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/backend/service.yaml>
 
 ### 4.2. Deploy the frontend
 
-kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/pod.yaml>
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/configmap.yaml>
+
+kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/deployment.yaml>
 
 kubectl apply -f <https://raw.githubusercontent.com/jeffcav/kubernetes-demo/main/src/k8s/frontend/service.yaml>
 
 ## 5. Access application from your host
 
-Now that all services of our application are running, we can access it performing a HTTP GET to port 30008 of any node that composes our cluster.
+Now that all components of our application are running, we can HTTP GET port 30001 of any node that composes our cluster (192.168.60.10 and 192.168.60.11).
 
-However, we might want to access the application we just provisioned from a browser in our host.
-
-To do so, expose port 30008 of any VM of the cluster to the host as below.
-Here we expose port 30008 as port 5050 of our host:
-
-From the cluster/ directory of this repository, run:
-
-`vagrant ssh k8s-node-1 -- -L 5050:localhost:30008`
-
-Now, from a web browser in your host access: `localhost:5050` and Voilà.
+From a web browser in your computer, enter: `192.168.60.11:30001` and Voilà.

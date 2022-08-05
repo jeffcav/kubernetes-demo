@@ -1,17 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
-  name: time-frontend
+  name: frontend
+
   labels:
     app-type: frontend
+
 spec:
   template:
     metadata:
       labels:
         app-type: frontend
+
     spec:
       containers:
-      - name: frontend-implementation
+      - name: frontend
         image: jrac/time-frontend:v1
         ports:
-        - containerPort: 5000
+          - containerPort: 5000
+
+        env:
+          - name: TIME_SERVER
+            valueFrom:
+              configMapKeyRef:
+                name: frontend-configmap
+                key: backend
+
+  replicas: 3
+  selector:
+    matchLabels:
+      app-type: frontend

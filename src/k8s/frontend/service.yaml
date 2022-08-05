@@ -1,13 +1,17 @@
-kind: Service
 apiVersion: v1
+kind: Service
+
 metadata:
-  name: time-frontend-service
+  name: frontend-service
+
 spec:
   type: NodePort
+
   selector:
     app-type: frontend
+
   ports:
   - protocol: TCP
-    port: 5000
+    port: 80
     targetPort: 5000
-    nodePort: 30008
+    nodePort: 30001

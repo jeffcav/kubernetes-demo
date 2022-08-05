@@ -1,11 +1,14 @@
-kind: Service
 apiVersion: v1
+kind: Service
+
 metadata:
-  name: time-backend-service
+  name: backend-service
+
 spec:
   selector:
     app-type: backend
+
   ports:
-  - protocol: TCP
-    port: 5000
-    targetPort: 5000
+    - protocol: TCP
+      port: 8080
+      targetPort: 5000

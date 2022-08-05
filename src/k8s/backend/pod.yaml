@@ -1,12 +1,16 @@
 apiVersion: v1
 kind: Pod
+
 metadata:
-  name: time-backend
+  name: backend
+  
   labels:
     app-type: backend
+
 spec:
   containers:
-  - name: backend-implementation
+  - name: timeserver
     image: jrac/time-backend:v1
+
     ports:
     - containerPort: 5000
